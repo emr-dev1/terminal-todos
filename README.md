@@ -40,7 +40,7 @@ For more control, see [SETUP.md](SETUP.md) for detailed step-by-step instruction
 
 ### Prerequisites
 
-- Python 3.12 (conda/miniconda)
+- Python 3.12 (conda/miniconda) - See [Miniconda Setup Guide](docs/MINICONDA_SETUP.md)
 - OpenAI API key
 
 ### Running the App

@@ -82,7 +82,10 @@ Upload your export ZIP file to cloud storage:
 
 ### Part 3: Setup New Computer
 
-Follow [SETUP.md](SETUP.md) to install Terminal Todos on your new computer:
+**First**: Install Miniconda if you don't have it - See [docs/MINICONDA_SETUP.md](docs/MINICONDA_SETUP.md)
+- Quick: `brew install miniconda && conda init zsh && source ~/.zshrc`
+
+Then follow [SETUP.md](SETUP.md) to install Terminal Todos:
 
 ```bash
 # 1. Clone repository

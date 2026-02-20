@@ -2,9 +2,12 @@
 
 ## Fresh Install (New Computer)
 
+**Prerequisites**: Install Miniconda first - See [docs/MINICONDA_SETUP.md](docs/MINICONDA_SETUP.md)
+- Quick: `brew install miniconda && conda init zsh`
+
 ```bash
 # 1. Clone the repository
-git clone <your-repo-url>
+git clone https://github.com/emr-dev1/terminal-todos.git
 cd terminal-todos
 
 # 2. Run one-click install

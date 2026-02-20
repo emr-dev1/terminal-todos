@@ -4,7 +4,8 @@ Complete setup instructions for installing Terminal Todos on a new computer.
 
 ## Prerequisites
 
-- **Conda or Miniconda** - [Download here](https://docs.conda.io/en/latest/miniconda.html)
+- **Conda or Miniconda** - See [Miniconda Setup Guide](docs/MINICONDA_SETUP.md) for detailed installation
+  - Quick install: `brew install miniconda` (macOS)
 - **Git** - For cloning the repository
 - **OpenAI API Key** - Get one at [platform.openai.com](https://platform.openai.com/)
 
@@ -119,10 +120,11 @@ This will:
 
 ### Issue: "conda: command not found"
 
-Install Miniconda:
+Install Miniconda (see [docs/MINICONDA_SETUP.md](docs/MINICONDA_SETUP.md) for full guide):
 ```bash
 # macOS
 brew install miniconda
+conda init zsh
 
 # Linux
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
