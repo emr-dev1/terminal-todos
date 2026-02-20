@@ -1,0 +1,9 @@
+name: terminal-todos
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+    - -e .  # Install package in editable mode from pyproject.toml

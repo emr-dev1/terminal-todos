@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "terminal-todos"
+version = "0.1.0"
+description = "Terminal-based notes and todos application with AI-powered extraction and semantic search"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+authors = [
+    {name = "Terminal Todos", email = "noreply@example.com"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "textual>=0.47.0",
+    "rich>=13.7.0",
+    "sqlalchemy>=2.0.25",
+    "chromadb>=0.4.22",
+    "sentence-transformers>=2.3.1",
+    "langgraph>=0.0.26",
+    "langchain>=0.1.5",
+    "langchain-openai>=0.0.5",
+    "openai>=1.10.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    "python-dotenv>=1.0.0",
+    "click>=8.1.7",
+    "dateparser>=1.2.0",
+    "openinference-instrumentation-langchain>=0.1.28",
+    "arize-otel>=0.1.0",
+    "opentelemetry-sdk>=1.20.0",
+    "opentelemetry-exporter-otlp>=1.20.0",
+    "pyperclip>=1.8.2",
+]
+
+[project.scripts]
+terminal-todos = "terminal_todos.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["terminal_todos"]
