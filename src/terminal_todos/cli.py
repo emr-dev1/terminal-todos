@@ -147,8 +147,10 @@ def export(output: str, verbose: bool) -> None:
 def import_data(zip_file: str, confirm_overwrite: bool, method: str, verbose: bool) -> None:
     """Import data from an export ZIP file."""
     from terminal_todos.core.import_service import ImportService
+    from terminal_todos.db.migrations import run_migrations
 
     click.echo(f"Importing data from {zip_file}...")
+    run_migrations()
 
     try:
         service = ImportService()
