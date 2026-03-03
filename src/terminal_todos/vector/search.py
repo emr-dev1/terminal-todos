@@ -16,7 +16,7 @@ class SemanticSearch:
         query: str,
         k: int = 10,
         completed: Optional[bool] = None,
-        relevance_threshold: float = 0.2,
+        relevance_threshold: float = 0.35,
         min_threshold: Optional[float] = None,
     ) -> List[Dict[str, Any]]:
         """
@@ -26,27 +26,31 @@ class SemanticSearch:
             query: Search query
             k: Number of results to return
             completed: Filter by completion status (None = all)
-            relevance_threshold: Default threshold (not used unless min_threshold set)
-            min_threshold: Optional strict minimum threshold for filtering
+            relevance_threshold: Minimum relevance score (0-1) to include a result.
+                                  relevance = 1 / (1 + L2_distance), so 0.35 ≈ distance ≤ 1.86.
+            min_threshold: Optional distance-space upper bound (overrides relevance_threshold
+                           when set — lower distance = better match).
 
         Returns:
             List of search results with relevance scores, sorted by relevance
         """
         results = self.vector_store.search_todos(query, k=k, completed=completed)
 
-        # Add relevance score to all results
         scored_results = []
         for result in results:
-            # Convert distance to relevance score (0-1, higher = more relevant)
             distance = result.get("distance", 0)
             relevance = 1 / (1 + distance)
             result["relevance"] = relevance
 
-            # Only apply strict filtering if min_threshold is explicitly set
-            if min_threshold is None or distance <= min_threshold:
-                scored_results.append(result)
+            if min_threshold is not None:
+                # Caller supplied an explicit distance-space cutoff
+                if distance <= min_threshold:
+                    scored_results.append(result)
+            else:
+                # Use the relevance-space threshold (the normal path)
+                if relevance >= relevance_threshold:
+                    scored_results.append(result)
 
-        # Sort by relevance (highest first)
         scored_results.sort(key=lambda x: x["relevance"], reverse=True)
 
         return scored_results
@@ -55,7 +59,7 @@ class SemanticSearch:
         self,
         query: str,
         k: int = 10,
-        relevance_threshold: float = 0.2,
+        relevance_threshold: float = 0.35,
         min_threshold: Optional[float] = None,
     ) -> List[Dict[str, Any]]:
         """
@@ -64,27 +68,27 @@ class SemanticSearch:
         Args:
             query: Search query
             k: Number of results to return
-            relevance_threshold: Default threshold (not used unless min_threshold set)
-            min_threshold: Optional strict minimum threshold for filtering
+            relevance_threshold: Minimum relevance score (0-1) to include a result.
+            min_threshold: Optional distance-space upper bound (overrides relevance_threshold).
 
         Returns:
             List of search results with relevance scores, sorted by relevance
         """
         results = self.vector_store.search_notes(query, k=k)
 
-        # Add relevance score to all results
         scored_results = []
         for result in results:
-            # Convert distance to relevance score (0-1, higher = more relevant)
             distance = result.get("distance", 0)
             relevance = 1 / (1 + distance)
             result["relevance"] = relevance
 
-            # Only apply strict filtering if min_threshold is explicitly set
-            if min_threshold is None or distance <= min_threshold:
-                scored_results.append(result)
+            if min_threshold is not None:
+                if distance <= min_threshold:
+                    scored_results.append(result)
+            else:
+                if relevance >= relevance_threshold:
+                    scored_results.append(result)
 
-        # Sort by relevance (highest first) and return top K
         scored_results.sort(key=lambda x: x["relevance"], reverse=True)
 
         return scored_results

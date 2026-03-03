@@ -148,7 +148,11 @@ def list_todos(status: str = "active") -> str:
     for todo in todos:
         status_icon = "✓" if todo.completed else "○"
         priority_label = {0: "", 1: " [HIGH]", 2: " [URGENT]"}.get(todo.priority, "")
-        lines.append(f"{status_icon} #{todo.id}: {todo.content}{priority_label}")
+        labels = todo.get_labels()
+        label_str = f" [{', '.join(labels)}]" if labels else ""
+        created_str = f" (added {todo.created_at.strftime('%b %d')})" if todo.created_at else ""
+        due_str = f" due {todo.due_date.strftime('%b %d')}" if todo.due_date else ""
+        lines.append(f"{status_icon} #{todo.id}: {todo.content}{priority_label}{label_str}{due_str}{created_str}")
 
     return "\n".join(lines)
 
@@ -156,30 +160,61 @@ def list_todos(status: str = "active") -> str:
 @tool
 def search_todos(query: str, limit: int = 10) -> str:
     """
-    Search todos semantically.
+    Search todos by content (semantic) AND by label name.
+
+    Combines vector similarity on todo content with an exact label match so that
+    queries like "Accenture todos" or "Phoenix project" surface items tagged with
+    those labels even when the label name doesn't appear in the todo text.
 
     Args:
-        query: Search query
+        query: Search query — matched against both content and label names
         limit: Maximum number of results
 
     Returns:
-        Formatted search results
+        Formatted search results with source indicated (content match vs label match)
     """
     service = get_todo_service()
-    results = service.search_todos(query, k=limit, completed=None)
 
-    if not results:
+    # --- 1. Semantic / vector search on content ---
+    semantic_results = service.search_todos(query, k=limit, completed=None)
+    seen_ids: set = {r["todo_id"] for r in semantic_results}
+
+    # --- 2. Label name match ---
+    all_labels = service.get_all_used_labels()
+    q_lower = query.lower()
+    matching_labels = [l for l in all_labels if q_lower in l.lower() or l.lower() in q_lower]
+
+    label_todos = []
+    for label in matching_labels:
+        for todo in service.list_by_label(label, include_completed=False):
+            if todo.id not in seen_ids:
+                label_todos.append((todo, label))
+                seen_ids.add(todo.id)
+
+    if not semantic_results and not label_todos:
         return f"No todos found matching: {query}"
 
-    lines = [f"Found {len(results)} todo(s) matching '{query}':"]
-    for result in results:
-        todo_id = result["todo_id"]
-        content = result["content"]
-        relevance = result.get("relevance", 0)
-        completed = result["metadata"].get("completed", False)
+    def _fmt_todo(todo, suffix: str) -> str:
+        status_icon = "✓" if todo.completed else "○"
+        priority_label = {0: "", 1: " [HIGH]", 2: " [URGENT]"}.get(todo.priority, "")
+        labels = todo.get_labels()
+        label_str = f" [{', '.join(labels)}]" if labels else ""
+        due_str = f" due {todo.due_date.strftime('%b %d')}" if todo.due_date else ""
+        created_str = f" (added {todo.created_at.strftime('%b %d')})" if todo.created_at else ""
+        return f"{status_icon} #{todo.id}: {todo.content}{priority_label}{label_str}{due_str}{created_str}{suffix}"
 
-        status_icon = "✓" if completed else "○"
-        lines.append(f"{status_icon} #{todo_id}: {content} (relevance: {relevance:.2f})")
+    total = len(semantic_results) + len(label_todos)
+    lines = [f"Found {total} todo(s) matching '{query}':"]
+
+    for result in semantic_results:
+        todo_id = result["todo_id"]
+        relevance = result.get("relevance", 0)
+        todo = service.get_todo(todo_id)
+        if todo:
+            lines.append(_fmt_todo(todo, f" (relevance: {relevance:.2f})"))
+
+    for todo, matched_label in label_todos:
+        lines.append(_fmt_todo(todo, f" (label: {matched_label})"))
 
     return "\n".join(lines)
 
@@ -239,7 +274,8 @@ def update_todo(
     todo_id: int,
     content: Optional[str] = None,
     priority: Optional[int] = None,
-    due_date: Optional[str] = None
+    due_date: Optional[str] = None,
+    labels: Optional[List[str]] = None,
 ) -> str:
     """
     Update a todo's properties.
@@ -252,6 +288,7 @@ def update_todo(
         content: New content/description (optional)
         priority: New priority level 0=normal, 1=high, 2=urgent (optional)
         due_date: New due date in ISO format or natural language (optional)
+        labels: New labels/categories for the todo (replaces existing labels, optional)
 
     Returns:
         Confirmation message
@@ -305,6 +342,12 @@ def update_todo(
                 updates.append(f"due date to {parsed_due_date.strftime('%Y-%m-%d')}")
             else:
                 return f"❌ Could not parse due date '{due_date}'. Try ISO format (YYYY-MM-DD) or natural language like 'friday' or 'next week'."
+
+        # Update labels
+        if labels is not None:
+            service.update_labels(todo_id, labels)
+            label_str = ", ".join(labels) if labels else "(none)"
+            updates.append(f"labels to [{label_str}]")
 
         if updates:
             # Sync to vector store
@@ -1998,6 +2041,113 @@ def get_email_draft(email_id: int) -> str:
         service.close()
 
 
+@tool
+def list_todos_by_label(label: str, include_completed: bool = False) -> str:
+    """
+    List all todos that have a specific label.
+
+    Use this when the user asks about todos for a particular client, project,
+    or category — e.g. "show me my Accenture todos", "what's left for the
+    Phoenix project", "list everything labeled internal".
+
+    Args:
+        label: The exact label name to filter by (case-sensitive)
+        include_completed: Whether to include completed todos (default False)
+
+    Returns:
+        Formatted list of matching todos, or a message if none found
+    """
+    service = get_todo_service()
+    try:
+        todos = service.list_by_label(label, include_completed)
+        if not todos:
+            # Fall back: try case-insensitive by checking all labels
+            all_labels = service.get_all_used_labels()
+            # Find close match (case-insensitive)
+            match = next((l for l in all_labels if l.lower() == label.lower()), None)
+            if match and match != label:
+                todos = service.list_by_label(match, include_completed)
+                label = match
+
+        if not todos:
+            all_labels = service.get_all_used_labels()
+            hint = f" Available labels: {', '.join(all_labels)}" if all_labels else " No labels have been created yet."
+            return f"No {'todos' if include_completed else 'active todos'} found with label '{label}'.{hint}"
+
+        status = "todos" if include_completed else "active todos"
+        lines = [f"Found {len(todos)} {status} labeled '{label}':"]
+        for todo in todos:
+            status_icon = "✓" if todo.completed else "○"
+            priority_label = {0: "", 1: " [HIGH]", 2: " [URGENT]"}.get(todo.priority, "")
+            due_str = f" due {todo.due_date.strftime('%b %d')}" if todo.due_date else ""
+            created_str = f" (added {todo.created_at.strftime('%b %d')})" if todo.created_at else ""
+            lines.append(f"{status_icon} #{todo.id}: {todo.content}{priority_label}{due_str}{created_str}")
+        return "\n".join(lines)
+    finally:
+        try:
+            service.close()
+        except:
+            pass
+
+
+@tool
+def label_todo(todo_id: int, labels: List[str]) -> str:
+    """
+    Set labels/categories on a todo, replacing any existing labels.
+
+    Use this to associate a todo with a client, partner, or project category
+    (e.g. "Accenture", "BCG", "Internal", "Partnership").
+
+    Call get_todo_labels() first to see what labels already exist so you can
+    maintain consistent naming across todos.
+
+    Args:
+        todo_id: The ID of the todo to label
+        labels: List of label strings (e.g. ["Accenture", "Partnership"])
+
+    Returns:
+        Confirmation message
+    """
+    service = get_todo_service()
+    try:
+        todo = service.get_todo(todo_id)
+        if not todo:
+            return f"❌ Todo #{todo_id} not found"
+
+        service.update_labels(todo_id, labels)
+        label_str = ", ".join(labels) if labels else "(none)"
+        return f"✓ Labeled todo #{todo_id} with [{label_str}]: {todo.content}"
+    finally:
+        try:
+            service.close()
+        except:
+            pass
+
+
+@tool
+def get_todo_labels() -> str:
+    """
+    Return all labels currently in use across all todos.
+
+    Call this before labeling todos to see existing categories and ensure
+    consistent naming (e.g. use "Accenture" not "accenture").
+
+    Returns:
+        Sorted list of all labels in use, or a message if none exist yet.
+    """
+    service = get_todo_service()
+    try:
+        labels = service.get_all_used_labels()
+        if not labels:
+            return "No labels have been applied to any todos yet."
+        return f"Labels in use ({len(labels)}): {', '.join(labels)}"
+    finally:
+        try:
+            service.close()
+        except:
+            pass
+
+
 # List of all tools
 ALL_TOOLS = [
     get_current_date,
@@ -2018,6 +2168,9 @@ ALL_TOOLS = [
     remove_from_focus,
     clear_focus_list,
     suggest_focus_todos,
+    list_todos_by_label,
+    label_todo,
+    get_todo_labels,
     create_note,
     list_notes,
     list_notes_by_date,

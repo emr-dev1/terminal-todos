@@ -273,6 +273,102 @@ class TodoService:
         """Get count of focused todos."""
         return self.todo_repo.get_focus_count()
 
+    def update_labels(self, todo_id: int, labels: List[str]) -> Optional[Todo]:
+        """Set labels on a todo, replacing any existing labels."""
+        todo = self.todo_repo.update_labels(todo_id, labels)
+        if todo:
+            self.sync_service.sync_todo(todo.id)
+            self.event_repo.log_event(
+                event_type="todo_labeled",
+                entity_type="todo",
+                entity_id=todo.id,
+                details={"labels": labels},
+            )
+        return todo
+
+    # ------------------------------------------------------------------
+    # Label registry — persists labels in {data_dir}/labels.json so
+    # they survive even when no todos currently carry them.
+    # ------------------------------------------------------------------
+
+    def _registry_path(self):
+        from pathlib import Path
+        from terminal_todos.config import get_settings
+        return get_settings().data_dir / "labels.json"
+
+    def _load_registry(self) -> list:
+        import json
+        p = self._registry_path()
+        if not p.exists():
+            return []
+        try:
+            return json.loads(p.read_text())
+        except Exception:
+            return []
+
+    def _save_registry(self, labels: list) -> None:
+        import json
+        p = self._registry_path()
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(json.dumps(sorted(set(labels))))
+
+    def list_by_label(self, label: str, include_completed: bool = False) -> List[Todo]:
+        """List todos that carry a specific label."""
+        return self.todo_repo.list_by_label(label, include_completed)
+
+    def get_all_used_labels(self) -> List[str]:
+        """Return all labels: those used on todos PLUS any in the label registry."""
+        todo_labels = set(self.todo_repo.get_all_used_labels())
+        registry = set(self._load_registry())
+        return sorted(todo_labels | registry)
+
+    def add_label(self, label: str) -> None:
+        """Add a label to the registry (creates it without requiring a todo)."""
+        registry = self._load_registry()
+        if label not in registry:
+            registry.append(label)
+            self._save_registry(registry)
+
+    def rename_label(self, old_label: str, new_label: str) -> int:
+        """Rename a label across all todos and the registry."""
+        from sqlalchemy import text
+        rows = self.session.execute(
+            text("SELECT id FROM todos WHERE labels LIKE :pat"),
+            {"pat": f'%"{old_label}"%'},
+        ).fetchall()
+        count = 0
+        for (todo_id,) in rows:
+            todo = self.get_todo(todo_id)
+            if todo:
+                labels = todo.get_labels()
+                if old_label in labels:
+                    self.update_labels(todo_id, [new_label if l == old_label else l for l in labels])
+                    count += 1
+        # Rename in registry too
+        registry = self._load_registry()
+        if old_label in registry:
+            self._save_registry([new_label if l == old_label else l for l in registry])
+        return count
+
+    def delete_label(self, label: str) -> int:
+        """Remove a label from all todos and the registry."""
+        from sqlalchemy import text
+        rows = self.session.execute(
+            text("SELECT id FROM todos WHERE labels LIKE :pat"),
+            {"pat": f'%"{label}"%'},
+        ).fetchall()
+        count = 0
+        for (todo_id,) in rows:
+            todo = self.get_todo(todo_id)
+            if todo:
+                labels = todo.get_labels()
+                if label in labels:
+                    self.update_labels(todo_id, [l for l in labels if l != label])
+                    count += 1
+        # Remove from registry too
+        self._save_registry([l for l in self._load_registry() if l != label])
+        return count
+
     def clear_focus(self) -> int:
         """Clear all focused todos."""
         count = self.todo_repo.clear_focus()

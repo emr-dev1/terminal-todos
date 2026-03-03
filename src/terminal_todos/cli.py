@@ -190,6 +190,120 @@ def import_data(zip_file: str, confirm_overwrite: bool, method: str, verbose: bo
         sys.exit(1)
 
 
+@main.command()
+@click.option("--host", default="127.0.0.1", help="Backend host", show_default=True)
+@click.option("--port", default=8000, type=int, help="Backend port", show_default=True)
+@click.option("--frontend-port", default=5173, type=int, help="Frontend dev server port", show_default=True)
+@click.option("--no-browser", is_flag=True, help="Don't open browser automatically")
+def web(host: str, port: int, frontend_port: int, no_browser: bool) -> None:
+    """Start the web interface — launches backend, frontend, and opens browser."""
+    import subprocess
+    import threading
+    import time
+    import webbrowser
+    import urllib.request
+    import urllib.error
+
+    # --- Config check ---
+    try:
+        settings = get_settings()
+
+        if not Path(".env").exists():
+            click.echo(
+                click.style(
+                    "⚠️  Warning: .env file not found. Copy .env.example to .env and add your OPENAI_API_KEY.",
+                    fg="yellow",
+                ),
+                err=True,
+            )
+            return
+
+        if not settings.openai_api_key or settings.openai_api_key == "your-openai-api-key-here":
+            click.echo(
+                click.style("⚠️  Error: OPENAI_API_KEY not set in .env file.", fg="red"),
+                err=True,
+            )
+            return
+
+    except Exception as e:
+        click.echo(click.style(f"❌ Configuration error: {e}", fg="red"), err=True)
+        sys.exit(1)
+
+    project_root = Path(__file__).parent.parent.parent
+    frontend_dir = project_root / "web" / "frontend"
+
+    # --- npm install if node_modules missing ---
+    if not (frontend_dir / "node_modules").exists():
+        click.echo("Installing frontend dependencies...")
+        result = subprocess.run(["npm", "install"], cwd=str(frontend_dir))
+        if result.returncode != 0:
+            click.echo(click.style("❌ npm install failed.", fg="red"), err=True)
+            sys.exit(1)
+
+    click.echo(click.style("Starting Terminal Todos web interface...", fg="cyan"))
+
+    processes: list[subprocess.Popen] = []
+
+    try:
+        # --- Start FastAPI backend ---
+        backend_proc = subprocess.Popen(
+            [sys.executable, "-m", "uvicorn", "web.backend.main:app",
+             "--host", host, "--port", str(port)],
+            cwd=str(project_root),
+        )
+        processes.append(backend_proc)
+        click.echo(f"  Backend:  http://{host}:{port}")
+
+        # --- Start Vite dev server ---
+        frontend_proc = subprocess.Popen(
+            ["npm", "run", "dev", "--", "--port", str(frontend_port)],
+            cwd=str(frontend_dir),
+        )
+        processes.append(frontend_proc)
+        click.echo(f"  Frontend: http://localhost:{frontend_port}")
+        click.echo("  Press Ctrl+C to stop both servers.\n")
+
+        # --- Wait for backend then open browser ---
+        def _open_browser() -> None:
+            health_url = f"http://{host}:{port}/health"
+            deadline = time.time() + 30
+            while time.time() < deadline:
+                try:
+                    urllib.request.urlopen(health_url, timeout=1)
+                    break
+                except Exception:
+                    time.sleep(0.4)
+            # Give vite a moment too
+            time.sleep(1.2)
+            if not no_browser:
+                webbrowser.open(f"http://localhost:{frontend_port}")
+
+        t = threading.Thread(target=_open_browser, daemon=True)
+        t.start()
+
+        # --- Keep running until Ctrl+C or a process exits ---
+        while True:
+            for p in processes:
+                if p.poll() is not None:
+                    raise SystemExit(0)
+            time.sleep(0.5)
+
+    except (KeyboardInterrupt, SystemExit):
+        click.echo("\nShutting down...")
+    finally:
+        for p in processes:
+            try:
+                p.terminate()
+            except Exception:
+                pass
+        for p in processes:
+            try:
+                p.wait(timeout=5)
+            except Exception:
+                pass
+        click.echo("Web interface stopped.")
+
+
 # Make 'terminal-todos' launch TUI by default (for backwards compatibility)
 @main.result_callback()
 @click.pass_context

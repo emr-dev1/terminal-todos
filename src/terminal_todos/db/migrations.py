@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from terminal_todos.db.connection import get_engine, get_session, init_db
 from terminal_todos.db.models import Base, Metadata
 
-CURRENT_SCHEMA_VERSION = 6
+CURRENT_SCHEMA_VERSION = 7
 
 
 class Migration:
@@ -135,6 +135,26 @@ def migration_v5_add_focus_order(session: Session) -> None:
         session.rollback()
 
 
+def migration_v7_add_labels_to_todos(session: Session) -> None:
+    """Add labels column to todos table for client/category tagging."""
+    from sqlalchemy import text
+
+    try:
+        result = session.execute(text("PRAGMA table_info(todos)"))
+        columns = [row[1] for row in result]
+
+        if "labels" not in columns:
+            session.execute(text("ALTER TABLE todos ADD COLUMN labels TEXT NOT NULL DEFAULT '[]'"))
+            session.commit()
+            print("  Added labels column to todos table")
+        else:
+            print("  labels column already exists, skipping")
+
+    except Exception as e:
+        print(f"  Warning: Could not add labels column: {e}")
+        session.rollback()
+
+
 def migration_v6_add_emails_table(session: Session) -> None:
     """Add emails table for email generation feature."""
     from sqlalchemy import text
@@ -201,6 +221,11 @@ MIGRATIONS: List[Migration] = [
         version=6,
         description="Add emails table",
         up=migration_v6_add_emails_table,
+    ),
+    Migration(
+        version=7,
+        description="Add labels column to todos",
+        up=migration_v7_add_labels_to_todos,
     ),
 ]
 

@@ -28,9 +28,21 @@ class Todo(Base):
     note_id = Column(Integer, ForeignKey("notes.id"), nullable=True)
     priority = Column(Integer, default=0)
     focus_order = Column(Integer, nullable=True, default=None)
+    labels = Column(Text, default='[]', nullable=False)
 
     # Relationships
     note = relationship("Note", back_populates="todos")
+
+    def get_labels(self) -> List[str]:
+        """Parse labels from JSON string."""
+        try:
+            return json.loads(self.labels or '[]')
+        except (json.JSONDecodeError, TypeError):
+            return []
+
+    def set_labels(self, labels: List[str]) -> None:
+        """Store labels as a sorted, deduplicated JSON string."""
+        self.labels = json.dumps(sorted(set(labels)))
 
     def __repr__(self) -> str:
         status = "✓" if self.completed else "○"

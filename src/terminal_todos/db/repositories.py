@@ -35,11 +35,11 @@ class TodoRepository:
         return self.session.query(Todo).filter(Todo.id == todo_id).first()
 
     def list_active(self, limit: int = 100) -> List[Todo]:
-        """List active (not completed) todos."""
+        """List active (not completed) todos, newest first."""
         return (
             self.session.query(Todo)
             .filter(Todo.completed == False)
-            .order_by(Todo.priority.desc(), Todo.created_at.desc())
+            .order_by(Todo.created_at.desc())
             .limit(limit)
             .all()
         )
@@ -70,10 +70,10 @@ class TodoRepository:
         )
 
     def list_all(self, limit: int = 100) -> List[Todo]:
-        """List all todos."""
+        """List all todos, active newest-first then completed."""
         return (
             self.session.query(Todo)
-            .order_by(Todo.completed.asc(), Todo.priority.desc(), Todo.created_at.desc())
+            .order_by(Todo.completed.asc(), Todo.created_at.desc())
             .limit(limit)
             .all()
         )
@@ -83,7 +83,7 @@ class TodoRepository:
         todo = self.get(todo_id)
         if todo:
             todo.completed = True
-            todo.completed_at = datetime.utcnow()
+            todo.completed_at = datetime.now()  # Local time — must match date queries in tools.py
             todo.focus_order = None  # Auto-remove from focus
             self.session.commit()
             self.session.refresh(todo)
@@ -171,11 +171,11 @@ class TodoRepository:
         )
 
     def list_no_due_date(self) -> List[Todo]:
-        """List todos with no due date."""
+        """List todos with no due date, newest first."""
         return (
             self.session.query(Todo)
             .filter(Todo.completed == False, Todo.due_date.is_(None))
-            .order_by(Todo.priority.desc(), Todo.created_at.desc())
+            .order_by(Todo.created_at.desc())
             .all()
         )
 
@@ -250,6 +250,37 @@ class TodoRepository:
         )
         self.session.commit()
         return count
+
+    def update_labels(self, todo_id: int, labels: List[str]) -> Optional[Todo]:
+        """Set labels on a todo, replacing any existing labels."""
+        todo = self.get(todo_id)
+        if not todo:
+            return None
+        todo.set_labels(labels)
+        self.session.commit()
+        self.session.refresh(todo)
+        return todo
+
+    def get_all_used_labels(self) -> List[str]:
+        """Return sorted unique labels used across all todos."""
+        from sqlalchemy import text
+        rows = self.session.execute(text("SELECT labels FROM todos WHERE labels != '[]'")).fetchall()
+        seen: set = set()
+        for (raw,) in rows:
+            try:
+                seen.update(json.loads(raw or '[]'))
+            except Exception:
+                pass
+        return sorted(seen)
+
+    def list_by_label(self, label: str, include_completed: bool = False) -> List[Todo]:
+        """List todos that have a specific label, newest first."""
+        query = self.session.query(Todo).filter(
+            Todo.labels.like(f'%"{label}"%')
+        )
+        if not include_completed:
+            query = query.filter(Todo.completed == False)
+        return query.order_by(Todo.created_at.desc()).all()
 
 
 class NoteRepository:
