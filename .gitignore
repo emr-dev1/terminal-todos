@@ -33,6 +33,9 @@ env/
 *.swo
 *~
 
+# Claude Code (local editor config)
+.claude/
+
 # Environment variables
 .env
 .env.local
@@ -62,3 +65,10 @@ htmlcov/
 # Temporary files
 *.tmp
 *.bak
+
+# Node / frontend
+node_modules/
+web/frontend/dist/
+web/frontend/.vite/
+web/frontend/coverage/
+*.tsbuildinfo
