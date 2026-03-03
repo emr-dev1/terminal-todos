@@ -1,0 +1,36 @@
+.app {
+  display: grid;
+  grid-template-rows: 48px 1fr;
+  height: 100vh;
+  width: 100vw;
+  background: var(--bg-base);
+}
+
+.app-body {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  overflow: hidden;
+  border-top: 1px solid var(--border);
+  transition: grid-template-columns 0.22s ease;
+}
+
+.app-body.panel-collapsed {
+  grid-template-columns: 44px 1fr;
+}
+
+@media (max-width: 900px) {
+  .app-body {
+    grid-template-columns: 300px 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .app-body {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+  .app-body.panel-collapsed {
+    grid-template-columns: 1fr;
+    grid-template-rows: 44px 1fr;
+  }
+}

@@ -1,0 +1,175 @@
+@keyframes todo-new-flash {
+  0%   { background: color-mix(in srgb, var(--accent) 18%, transparent); }
+  100% { background: transparent; }
+}
+
+.todo-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-muted);
+  transition: background 0.1s;
+}
+
+.todo-item--new {
+  animation: todo-new-flash 4s ease-out forwards;
+}
+
+.todo-item:hover {
+  background: var(--bg-hover);
+}
+
+.todo-item:last-child {
+  border-bottom: none;
+}
+
+.todo-focused {
+  border-left: 2px solid var(--accent);
+  padding-left: 10px;
+}
+
+.todo-completed .todo-content {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.todo-check {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 11px;
+  transition: all 0.15s;
+  margin-top: 1px;
+}
+
+.todo-check:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.todo-check.checked {
+  border-color: var(--success);
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 10%, transparent);
+}
+
+.todo-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.todo-content {
+  display: block;
+  font-size: 13px;
+  color: var(--text-primary);
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+.todo-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+  flex-wrap: wrap;
+}
+
+.todo-priority {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.priority-medium { color: var(--warning); }
+.priority-high { color: var(--danger); }
+
+.todo-due {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.todo-due.overdue {
+  color: var(--danger);
+}
+
+.todo-focus-badge {
+  font-size: 10px;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: var(--radius-sm);
+  padding: 0 4px;
+  line-height: 1.6;
+}
+
+.todo-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.todo-item:hover .todo-actions {
+  opacity: 1;
+}
+
+.todo-action-btn {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 14px;
+  transition: all 0.1s;
+}
+
+.todo-action-btn:hover {
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+}
+
+.todo-action-btn.active {
+  color: var(--accent);
+}
+
+.todo-action-btn.danger:hover,
+.todo-action-btn.confirming {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+}
+
+.todo-action-btn.chat-btn:hover {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.todo-labels-inline {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+
+.todo-label-chip {
+  font-size: 10px;
+  color: #e6edf3;
+  border-radius: var(--radius-sm);
+  padding: 1px 5px;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}

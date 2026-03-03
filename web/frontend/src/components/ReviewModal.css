@@ -1,0 +1,378 @@
+.review-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.review-modal {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 10px);
+  width: 100%;
+  max-width: 540px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* ---- Header ---- */
+.review-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.review-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+}
+
+.review-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.review-progress {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.review-done-count {
+  color: var(--success);
+}
+
+.review-mode-toggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+/* mode-btn reused from LabelModal pattern */
+.review-modal .mode-btn {
+  font-size: 11px;
+  padding: 3px 8px;
+  color: var(--text-muted);
+  transition: all 0.1s;
+}
+
+.review-modal .mode-btn:hover {
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+}
+
+.review-modal .mode-btn.active {
+  background: var(--accent);
+  color: var(--bg-base);
+}
+
+.review-close {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 18px;
+  line-height: 1;
+  transition: all 0.1s;
+}
+
+.review-close:hover {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+}
+
+/* ---- Body ---- */
+.review-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 300px;
+}
+
+.review-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ---- Done state ---- */
+.review-done-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.review-done-icon {
+  font-size: 36px;
+  color: var(--success);
+}
+
+.review-done-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.review-close-btn {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 6px 20px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  transition: all 0.1s;
+}
+
+.review-close-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--accent);
+}
+
+/* ---- Todo card ---- */
+.review-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+}
+
+.review-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 7px;
+  flex-wrap: wrap;
+}
+
+.review-card-id {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+.review-card-priority {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--warning);
+  font-weight: 700;
+}
+
+.review-card-due {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  background: var(--bg-hover);
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+}
+
+.review-card-labels {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.review-card-label-chip {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: #e6edf3;
+  border-radius: var(--radius-sm);
+  padding: 1px 6px;
+}
+
+.review-card-skip {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  transition: all 0.1s;
+}
+
+.review-card-skip:hover {
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+}
+
+.review-card-content {
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+/* ---- Sections ---- */
+.review-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.review-section--row {
+  flex-direction: row;
+  align-items: center;
+}
+
+.review-section-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+
+/* ---- Note textarea ---- */
+.review-note {
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text-primary);
+  resize: vertical;
+  font-family: var(--font-body, inherit);
+  line-height: 1.5;
+  transition: border-color 0.1s;
+  min-height: 72px;
+}
+
+.review-note:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.review-note::placeholder {
+  color: var(--text-muted);
+}
+
+/* ---- Priority buttons ---- */
+.review-priority-btns {
+  display: flex;
+  gap: 6px;
+  margin-left: 8px;
+}
+
+.review-priority-btn {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  transition: all 0.12s;
+}
+
+.review-priority-btn:hover {
+  color: var(--text-secondary);
+  border-color: var(--accent);
+}
+
+.review-priority-btn.active.priority-0 {
+  background: var(--bg-elevated);
+  border-color: var(--text-muted);
+  color: var(--text-secondary);
+}
+
+.review-priority-btn.active.priority-1 {
+  background: color-mix(in srgb, var(--warning) 15%, transparent);
+  border-color: var(--warning);
+  color: var(--warning);
+}
+
+.review-priority-btn.active.priority-2 {
+  background: color-mix(in srgb, var(--danger) 15%, transparent);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+/* ---- Navigation ---- */
+.review-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.review-nav-right {
+  display: flex;
+  gap: 8px;
+}
+
+.review-nav-btn {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  transition: all 0.1s;
+}
+
+.review-nav-btn:hover:not(:disabled) {
+  color: var(--text-secondary);
+  border-color: var(--accent);
+}
+
+.review-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.review-done-btn {
+  background: color-mix(in srgb, var(--success) 15%, transparent);
+  border: 1px solid var(--success);
+  color: var(--success);
+  border-radius: var(--radius-sm);
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.1s;
+}
+
+.review-done-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--success) 25%, transparent);
+}
+
+.review-done-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.review-save-btn {
+  background: var(--accent);
+  color: var(--bg-base);
+  border-radius: var(--radius-sm);
+  padding: 6px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.1s;
+}
+
+.review-save-btn:hover:not(:disabled) {
+  background: var(--accent-hover, color-mix(in srgb, var(--accent) 85%, white));
+}
+
+.review-save-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

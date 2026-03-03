@@ -1,0 +1,425 @@
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.settings-modal {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 10px);
+  width: 100%;
+  max-width: 680px;
+  height: 560px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.55);
+}
+
+/* ---- Header ---- */
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.settings-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
+
+.settings-close {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  transition: all 0.1s;
+}
+
+.settings-close:hover {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+}
+
+/* ---- Loading ---- */
+.settings-loading {
+  padding: 48px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ---- Body: nav + pane ---- */
+.settings-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ---- Sidebar nav ---- */
+.settings-nav {
+  display: flex;
+  flex-direction: column;
+  width: 140px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  padding: 10px 0;
+  background: var(--bg-base);
+  overflow-y: auto;
+}
+
+.settings-nav-btn {
+  padding: 8px 16px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: left;
+  transition: all 0.1s;
+  border-left: 2px solid transparent;
+}
+
+.settings-nav-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.settings-nav-btn.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  font-weight: 600;
+}
+
+/* ---- Content pane ---- */
+.settings-pane {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+}
+
+/* ---- Section ---- */
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.settings-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  margin: 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-muted);
+}
+
+.settings-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin: -8px 0 0;
+}
+
+/* ---- Field ---- */
+.settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settings-field--row {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.settings-field--row input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.settings-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.settings-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ---- Inputs ---- */
+.settings-input {
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  font-size: 13px;
+  color: var(--text-primary);
+  transition: border-color 0.1s;
+  width: 100%;
+}
+
+.settings-input:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.settings-input--short {
+  width: 100px;
+}
+
+.settings-input--key {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.settings-select {
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: border-color 0.1s;
+}
+
+.settings-select:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+/* ---- Code blocks ---- */
+.settings-code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-muted);
+  border-radius: var(--radius-sm);
+  padding: 5px 9px;
+  word-break: break-all;
+}
+
+.settings-code--key {
+  flex: 1;
+  padding: 6px 10px;
+}
+
+.settings-unset {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ---- API key row ---- */
+.settings-key-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-change-btn {
+  font-size: 11px;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
+  white-space: nowrap;
+  transition: all 0.1s;
+  flex-shrink: 0;
+}
+
+.settings-change-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ---- Error ---- */
+.settings-error {
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--danger);
+}
+
+/* ---- Actions ---- */
+.settings-actions {
+  padding-top: 4px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.settings-save-btn {
+  background: var(--accent);
+  color: var(--bg-base);
+  border-radius: var(--radius-sm);
+  padding: 7px 22px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.1s;
+}
+
+.settings-save-btn:hover:not(:disabled) {
+  background: var(--accent-hover, color-mix(in srgb, var(--accent) 85%, white));
+}
+
+.settings-save-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ---- Labels tab ---- */
+.settings-empty {
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 24px 0;
+  text-align: center;
+}
+
+.settings-label-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  border: 1px solid var(--border-muted);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.settings-label-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: var(--bg-base);
+  border-bottom: 1px solid var(--border-muted);
+  min-height: 42px;
+}
+
+.settings-label-row:last-child {
+  border-bottom: none;
+}
+
+.settings-label-chip {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 2px 10px;
+  line-height: 1.6;
+}
+
+.settings-label-rename-input {
+  flex: 1;
+  padding: 5px 8px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+}
+
+.settings-label-actions {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.settings-label-action {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
+  transition: all 0.1s;
+}
+
+.settings-label-action:hover:not(:disabled) {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.settings-label-action--save {
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 40%, transparent);
+}
+
+.settings-label-action--save:hover:not(:disabled) {
+  color: var(--success);
+  border-color: var(--success);
+  background: color-mix(in srgb, var(--success) 10%, transparent);
+}
+
+.settings-label-action--danger:hover:not(:disabled) {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 8%, transparent);
+}
+
+.settings-label-action:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ---- Add new label row ---- */
+.settings-label-add-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding-top: 4px;
+}
+
+.settings-label-add-input {
+  flex: 1;
+}
+
+.settings-label-add-btn {
+  font-size: 12px;
+  padding: 7px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.1s;
+  flex-shrink: 0;
+}
+
+.settings-label-add-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.settings-label-add-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
